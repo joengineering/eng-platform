@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: teams-ui
+---  
+# k8s/teams-ui-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: teams-ui-service
+  namespace: teams-ui
+  labels:
+    app: teams-ui
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: teams-ui
+---
+# k8s/teams-ui-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teams-ui
+  namespace: teams-ui
+  labels:
+    app: teams-ui
+    component: frontend
+  annotations:
+    commit-sha: 8b514a1cb354
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teams-ui
+  template:
+    metadata:
+      labels:
+        app: teams-ui
+        component: frontend
+    spec:
+      containers:
+      - name: teams-ui
+        image: teams-ui:local      
+#        image: olivercodes01/teams-app:0.0.7
+        ports:
+        - containerPort: 80
+        env:
+        - name: API_URL
+          value: "http://teams-api-service.teams-api.svc.cluster.local:4200"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---          
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teams-ui-ingress
+  namespace: teams-ui
+spec:
+  ingressClassName: nginx
+  rules:
+#  - host: platform-auth.127.0.0.1.sslip.io
+  - host: teams-ui.fd60-627a-a42b-42d3-861a-6987-3179-4d87.sslip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teams-ui-service
+            port:
+              number: 80

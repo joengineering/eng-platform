@@ -13,9 +13,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-NAMESPACE="engineering-platform"
-UI_IMAGE="teams-ui:latest"
-API_IMAGE="teams-api:latest"
+NAMESPACE="teams-ui"
+UI_IMAGE="teams-ui:local"
 
 # Functions
 log_info() {
@@ -100,23 +99,31 @@ build_images() {
 
     log_success "Docker images built successfully"
 }
+# Load  Docker images
+load_image() {
+    log_info "Loading Docker images..."
+
+    kind load docker-image teams-ui:local --name 5min-idp
+    
+    log_success "Docker image loaded"
+}
 
 # Deploy to Kubernetes
 deploy_k8s() {
     log_info "Deploying to Kubernetes..."
 
-    # Create namespace if it doesn't exist
-    kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
-    log_success "Namespace '$NAMESPACE' ready"
 
     # Apply Kubernetes manifests
     kubectl apply -f k8s/
-
+    
+    #apply rolling restar
+    kubectl  rollout restart deployment teams-ui -n teams-ui
+    
     log_success "Kubernetes resources deployed"
 
     # Wait for deployments to be ready
     log_info "Waiting for deployments to be ready..."
-    kubectl wait --for=condition=available --timeout=300s deployment/teams-ui deployment/teams-api -n $NAMESPACE
+    kubectl wait --for=condition=available --timeout=300s deployment/teams-ui -n $NAMESPACE
 
     log_success "Deployments are ready"
 }
@@ -169,6 +176,7 @@ deploy() {
     check_docker
     build_ui
     build_images
+    load_image
     deploy_k8s
     check_status
 

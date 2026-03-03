@@ -1,0 +1,3 @@
+docker build -t teams-api:local .
+kind load docker-image teams-api:local --name 5min-idp
+kubectl rollout restart deployment teams-api -n teams-api

@@ -68,6 +68,31 @@
   font-weight: 500;
 }
 
+.team-updated {
+  font-weight: 500;
+}
+
+.team-status {
+  font-weight: 600;
+}
+
+.team-details .status-created {
+  color: #2ecc71; /* groen */
+}
+
+.team-details .status-requested {
+  color: #f1c40f; /* geel */
+}
+
+.team-details .status-failed {
+  color: #e74c3c; /* rood */
+}
+
+.team-details .status-unknown {
+  color: #7f8c8d; /* fallback */
+}
+
+
 .btn-danger {
   background-color: #e74c3c;
   color: white;

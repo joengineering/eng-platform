@@ -56,4 +56,18 @@ export class TeamListComponent implements OnInit {
       minute: "2-digit",
     });
   }
+
+  getStatusClass(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'created':
+      return 'status-created';
+    case 'requested':
+      return 'status-requested';
+    case 'failed':
+      return 'status-failed';
+    default:
+      return 'status-unknown';
+  }
+}
+
 }

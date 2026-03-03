@@ -1,0 +1,2 @@
+docker build -t backend-app:local .
+kind load docker-image backend-app:local --name 5min-idp

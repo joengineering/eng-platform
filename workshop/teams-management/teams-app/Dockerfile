@@ -11,6 +11,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Build the app for production
+RUN npm install
 RUN npm run build:prod
 
 # Use nginx to serve the app

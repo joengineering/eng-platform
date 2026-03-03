@@ -22,7 +22,8 @@ function initializeKeycloak(keycloak: KeycloakService) {
         checkLoginIframe: false,
       },
       bearerExcludedUrls: ['/assets'],
-    });
+    })
+    .catch(err => { console.error('Keycloak init failed', err); });
 }
 
 @NgModule({

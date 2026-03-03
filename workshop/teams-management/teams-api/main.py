@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 import uuid
 from datetime import datetime
 
@@ -27,10 +27,16 @@ teams_store: Dict[str, Dict] = {}
 class TeamCreate(BaseModel):
     name: str
 
+class TeamUpdate(BaseModel):
+    name: Optional[str] = None
+    status: Optional[str] = None
+
 class Team(BaseModel):
     id: str
     name: str
     created_at: datetime
+    updated_at: datetime
+    status: str    
 
 @app.get("/")
 async def root():
@@ -49,7 +55,9 @@ async def create_team(team: TeamCreate):
     new_team = {
         "id": team_id,
         "name": team.name,
-        "created_at": datetime.now()
+        "created_at": datetime.now(),
+        "updated_at": datetime.now(),
+        "status": "requested"
     }
 
     teams_store[team_id] = new_team
@@ -67,6 +75,27 @@ async def get_team(team_id: str):
         raise HTTPException(status_code=404, detail="Team not found")
 
     return Team(**teams_store[team_id])
+
+@app.patch("/teams/{team_id}", response_model=Team)
+async def update_team(team_id: str, teamUpdate: TeamUpdate):
+    """Update a team"""
+    print(f"Update requested for team {team_id}")
+    if team_id not in teams_store:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    team = Team(**teams_store[team_id]) 
+    # Update fields using attribute access 
+    
+    # Only include fields that were actually provided 
+    update_data = teamUpdate.dict(exclude_unset=True) 
+    # Apply updates 
+    for field, value in update_data.items(): 
+        setattr(team, field, value)
+
+    team.updated_at = datetime.now() 
+    # Save back as dict 
+    teams_store[team_id] = team.dict()
+    return team
 
 @app.delete("/teams/{team_id}")
 async def delete_team(team_id: str):

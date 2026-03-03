@@ -28,6 +28,8 @@
       <div class="team-details">
         <p class="team-id">ID: {{ team.id }}</p>
         <p class="team-created">Created: {{ formatDate(team.created_at) }}</p>
+        <p class="team-updated">Updated: {{ formatDate(team.updated_at) }}</p>
+        <p class="team-status" [ngClass]="getStatusClass(team.status)">Status: {{ team.status }}</p>
       </div>
     </div>
   </div>

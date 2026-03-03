@@ -9,7 +9,7 @@ import sys
 import requests
 from typing import Optional
 
-API_BASE_URL = "http://teams-api.127.0.0.1.sslip.io"
+API_BASE_URL = "http://localhost:4200"
 
 class TeamsAPI:
     def __init__(self, base_url: str = API_BASE_URL):
@@ -18,11 +18,16 @@ class TeamsAPI:
     def _make_request(self, method: str, endpoint: str, data: Optional[dict] = None) -> dict:
         """Make HTTP request to the API"""
         url = f"{self.base_url}{endpoint}"
+        #print(f"Calling url {url}")
         try:
             if method == "GET":
                 response = requests.get(url)
             elif method == "POST":
                 response = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+            elif method == "PUT":
+                response = requests.put(url, json=data, headers={"Content-Type": "application/json"})
+            elif method == "PATCH":
+                response = requests.patch(url, json=data, headers={"Content-Type": "application/json"})
             elif method == "DELETE":
                 response = requests.delete(url)
             else:
@@ -61,21 +66,61 @@ class TeamsAPI:
         print(f"✅ Created team: {result['name']}")
         print(f"🆔 Team ID: {result['id']}")
         print(f"📅 Created: {result['created_at']}")
+        print(f"📅 Updated: {result['updated_at']}")
+        print(f"📅 Status: {result['status']}")
 
-    def list_teams(self):
+    def update_team(self, id: str, name: str):
+        """Create a new team"""
+        result = self._make_request("PATCH", "/teams/"+id, {"name": name})
+        print(f"✅ Updated team: {result['name']}")
+        print(f"🆔 Team ID: {result['id']}")
+        print(f"📅 Created: {result['created_at']}")
+        print(f"📅 Updated: {result['updated_at']}")
+        print(f"📅 Status: {result['status']}")
+
+    def list_teams(self, format: str):
         """List all teams"""
         teams = self._make_request("GET", "/teams")
         if not teams:
-            print("📭 No teams found")
+            if format == "text": 
+                print("📭 No teams found")
+            else: 
+                print("[]") 
             return
-            
-        print(f"📋 Found {len(teams)} team(s):")
-        print("-" * 60)
-        for team in teams:
-            print(f"🏷️  Name: {team['name']}")
-            print(f"🆔 ID: {team['id']}")
-            print(f"📅 Created: {team['created_at']}")
+        if format == "text":
+            print(f"📋 Found {len(teams)} team(s):")
             print("-" * 60)
+            for team in teams:
+                print(f"🏷️  Name: {team['name']}")
+                print(f"🆔 ID: {team['id']}")
+                print(f"📅 Created: {team['created_at']}")
+                print(f"📅 Updated: {team['updated_at']}")
+                print(f"📅 Status: {team['status']}")
+                print("-" * 60)
+        elif format== "json": 
+            records = []
+            for team in teams:
+                records.append(f"{{\"id\":\"{team['id']}\",\"name\":\"{team['name']}\",\"createdAt\":\"{team['created_at']}\"}}")
+            print("["+",".join(records)+"]")    
+        elif format== "json-pretty": 
+            print("[")
+            records = []
+            
+            for i, team in enumerate(teams):
+                if i>0:
+                    print(",{")
+                else: 
+                    print ("{")
+                print(f"    \"id\":\"{team['id']}\",")
+                print(f"    \"name\":\"{team['name']}\",")
+                print(f"    \"createdAt\":\"{team['created_at']}\"")
+                print(f"    \"updatedAt\":\"{team['updated_at']}\"")
+                print(f"    \"status\":\"{team['status']}\"")
+                print("}") 
+            print("]")
+        else: 
+            print(f"Unknown format: {format}")
+            sys.exit(-1)
 
     def get_team(self, team_id: str):
         """Get a specific team by ID"""
@@ -83,6 +128,8 @@ class TeamsAPI:
         print(f"🏷️  Name: {team['name']}")
         print(f"🆔 ID: {team['id']}")
         print(f"📅 Created: {team['created_at']}")
+        print(f"📅 Updated: {team['updated_at']}")
+        print(f"📅 Status: {team['status']}")
 
     def delete_team(self, team_id: str):
         """Delete a team"""
@@ -100,6 +147,7 @@ Examples:
   teams-cli list                      # List all teams
   teams-cli get <team-id>            # Get specific team
   teams-cli delete <team-id>         # Delete a team
+  teams-cli update -i <team-id> -n <name>            # Update name for team
         """
     )
     
@@ -108,7 +156,7 @@ Examples:
         default=API_BASE_URL,
         help=f"API base URL (default: {API_BASE_URL})"
     )
-    
+ 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     
     # Health command
@@ -117,10 +165,20 @@ Examples:
     # Create command
     create_parser = subparsers.add_parser("create", help="Create a new team")
     create_parser.add_argument("name", help="Team name")
-    
+
+    # update command
+    update_parser = subparsers.add_parser("update", help="Update a team")
+    update_parser.add_argument("-i","--id", help="Team id")
+    update_parser.add_argument("-n", "--name", help="Team name")
+
     # List command
-    subparsers.add_parser("list", help="List all teams")
-    
+    list_parser = subparsers.add_parser("list", help="List all teams")
+    list_parser.add_argument(
+        "-o", "--output", 
+        default="text",
+        help=f"output format (default: text)"
+    )
+
     # Get command
     get_parser = subparsers.add_parser("get", help="Get a specific team")
     get_parser.add_argument("team_id", help="Team ID")
@@ -128,6 +186,7 @@ Examples:
     # Delete command
     delete_parser = subparsers.add_parser("delete", help="Delete a team")
     delete_parser.add_argument("team_id", help="Team ID")
+
     
     args = parser.parse_args()
     
@@ -144,8 +203,10 @@ Examples:
             api.health_check()
         elif args.command == "create":
             api.create_team(args.name)
+        elif args.command == "update":
+            api.update_team(args.id, args.name)
         elif args.command == "list":
-            api.list_teams()
+            api.list_teams(args.output)
         elif args.command == "get":
             api.get_team(args.team_id)
         elif args.command == "delete":

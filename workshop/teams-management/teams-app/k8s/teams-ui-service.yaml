@@ -3,15 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: teams-ui-service
-  namespace: engineering-platform
+  namespace: teams-ui
   labels:
     app: teams-ui
     component: frontend
 spec:
   type: ClusterIP
   ports:
-  - port: 80
-    targetPort: 80
+  - port: 443
+    targetPort: 443
     protocol: TCP
     name: http
   selector:

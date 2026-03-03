@@ -3,14 +3,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: teams-ui
-  namespace: engineering-platform
+  namespace: teams-ui
   labels:
     app: teams-ui
     component: frontend
   annotations:
     commit-sha: 8b514a1cb354
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: teams-ui
@@ -22,12 +22,13 @@ spec:
     spec:
       containers:
       - name: teams-ui
-        image: olivercodes01/teams-app:0.0.7
+#        image: olivercodes01/teams-app:0.0.7
+        image: teams-ui:local
         ports:
-        - containerPort: 80
+        - containerPort: 443
         env:
         - name: API_URL
-          value: "http://teams-api-service:4200"
+          value: "http://architect-platform-eng.coder:443"
         resources:
           requests:
             memory: "64Mi"
@@ -37,13 +38,16 @@ spec:
             cpu: "100m"
         livenessProbe:
           httpGet:
+            scheme: HTTPS
             path: /health
-            port: 80
+            port: 443
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
+            scheme: HTTPS
             path: /health
-            port: 80
+            port: 443
           initialDelaySeconds: 5
           periodSeconds: 5
+

@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+spec:
+  ingressClassName: nginx
+  rules:
+#  - host: platform-auth.127.0.0.1.sslip.io
+  - host: grafana.fd60-627a-a42b-42d3-861a-6987-3179-4d87.sslip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-stack
+            port:
+              number: 80
