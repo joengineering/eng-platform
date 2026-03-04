@@ -21,3 +21,13 @@ spec:
             name: teams-api-service
             port:
               number: 4200
+  - host: teams-api.fd60-627a-a42b-42d3-861a-6987-3179-4d87.sslip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teams-api-service
+            port:
+              number: 4200              
