@@ -5,12 +5,12 @@ metadata:
   namespace: argocd
 spec:
   destination:
-    namespace: team-operator
+    namespace: teams-operator
     server: https://kubernetes.default.svc
-  project: team-testteam
+  project: engineering-platform
   source:
     path: argo/teams-operator
-    repoURL: https://github.com/joengineering/team-testteam
+    repoURL: https://github.com/joengineering/eng-platform
     targetRevision: jo/final
   syncPolicy:
     automated:
