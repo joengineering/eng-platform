@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teams-api-ingress
+  namespace: teams-api
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/headers.accesscontrolallowmethods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+    traefik.ingress.kubernetes.io/headers.accesscontrolalloworigin: "*"
+    traefik.ingress.kubernetes.io/headers.accesscontrolallowheaders: Content-Type,Authorization,X-Requested-With
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: teams-api.127.0.0.1.sslip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teams-api-service
+            port:
+              number: 4200
