@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-teams-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: team-operator
+    server: https://kubernetes.default.svc
+  project: team-testteam
+  source:
+    path: argo/teams-operator
+    repoURL: https://github.com/joengineering/team-testteam
+    targetRevision: jo/final
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true

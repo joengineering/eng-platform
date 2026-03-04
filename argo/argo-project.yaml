@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  name: engineering-platform
+  namespace: argocd
+spec:
+  clusterResourceWhitelist: []
+  description: Project for engineerig platform
+  destinations:
+  - name: in-cluster
+    namespace: teams-api
+    server: https://kubernetes.default.svc
+  - name: in-cluster
+    namespace: teams-ui
+    server: https://kubernetes.default.svc
+  - name: in-cluster
+    namespace: teams-operator
+    server: https://kubernetes.default.svc
+  namespaceResourceBlacklist:
+  - group: ""
+    kind: ResourceQuota
+  - group: ""
+    kind: LimitRange
+  - group: ""
+    kind: NetworkPolicy
+  orphanedResources:
+    warn: false
+  sourceRepos:
+  - '*'
