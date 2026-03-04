@@ -30,6 +30,32 @@ TODO:
 ```
 kubectl port-forward svc/argocd-server -n argocd 7080:443
 ```
+https://architect-platform-eng.coder:7080/applications
+
+password:
+```ZU1Ij5kpigjYwtQq```
+
+# Security 
+Run a highly privileged container: This should generate security alerts - run a privileged container
+
+```bash
+kubectl run test-privileged \
+  --image=busybox \
+  --restart=Never \
+  --rm -it \
+  --overrides='{"spec":{"securityContext":{"privileged":true}}}' \
+  -- sh
+```
+
+>Check for security alerts
+
+```bash
+kubectl logs -n falco-system daemonset/falco | grep "Privileged container"
+```
+>Should list something like
+``` 
+09:58:02.175087357: Critical Executing binary not part of base image | proc_exe=grep proc_sname= gparent=<NA> proc_exe_ino_ctime=1770571313984835057 proc_exe_ino_mtime=1712591919000000000 proc_exe_ino_ctime_duration_proc_start=2046968189132369 proc_cwd= container_start_ts=1770571307202594010 evt_type=execve user=root user_uid=0 user_loginuid=-1 process=grep proc_exepath=/usr/bin/grep parent=<NA> command=grep --color=auto Privileged container terminal=34816 exe_flags=EXE_WRITABLE|EXE_UPPER_LAYER container_id=9558168877a5 container_name=<NA> container_image_repository=<NA> container_image_tag=<NA> k8s_pod_name=<NA> k8s_ns_name=<NA>
+```
 
 
 # Team creation test

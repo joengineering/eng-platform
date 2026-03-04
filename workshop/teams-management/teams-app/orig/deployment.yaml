@@ -16,7 +16,7 @@ spec:
   type: ClusterIP
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     protocol: TCP
     name: http
   selector:
@@ -44,12 +44,15 @@ spec:
         app: teams-ui
         component: frontend
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true
       containers:
       - name: teams-ui
         image: teams-ui:local      
 #        image: olivercodes01/teams-app:0.0.7
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         env:
         - name: API_URL
           value: "http://teams-api-service.teams-api.svc.cluster.local:4200"
@@ -63,13 +66,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 80
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 80
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
 ---          
